@@ -5,8 +5,6 @@ const file = Bun.file(filePath);
 const content = await file.text();
 const lines = content.split('\n');
 
-const possibleGames: number[] = [];
-
 let sum = 0;
 let gameNumber = 1;
 
