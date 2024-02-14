@@ -29,21 +29,20 @@ for (const line of lines) {
   }
 
   let currentRowIndex = rows.length - 1;
-  rows[currentRowIndex].push(0);
+  rows[currentRowIndex].unshift(0);
   currentRowIndex--;
 
   while (currentRowIndex >= 0) {
     const currentRow = rows[currentRowIndex];
     const belowRow = rows[currentRowIndex + 1];
-    const index = currentRow.length - 1;
 
-    const sum = currentRow[index] + belowRow[index];
-    currentRow.push(sum);
+    const sum = currentRow[0] - belowRow[0];
+    currentRow.unshift(sum);
 
     currentRowIndex--;
   }
 
-  const extrapolatedValue = rows[0][rows[0].length - 1];
+  const extrapolatedValue = rows[0][0];
   extrapolatedValues.push(extrapolatedValue);
 }
 
