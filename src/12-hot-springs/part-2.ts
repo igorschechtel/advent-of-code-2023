@@ -5,89 +5,59 @@ const file = Bun.file(filePath);
 const content = await file.text();
 const lines = content.split('\n');
 
-const generateCombinations = (inputArray: number[], k: number): number[][] => {
-  // Check for invalid cases
-  if (k > inputArray.length || k <= 0) return [];
-
-  // A queue to hold the state of each combination in progress
-  // Each element in the queue is a tuple: [currentCombination, nextStartIndex]
-  const queue: [number[], number][] = [];
-
-  // Initialize the queue with the first element of each combination
-  for (let i = 0; i <= inputArray.length - k; i++) {
-    queue.push([[inputArray[i]], i + 1]);
-  }
-
-  const allCombinations: number[][] = [];
-
-  while (queue.length > 0) {
-    const [currentCombination, nextStartIndex] = queue.shift()!;
-
-    // If the current combination is complete, add it to allCombinations
-    if (currentCombination.length === k) {
-      allCombinations.push(currentCombination);
-      continue;
-    }
-
-    // Otherwise, extend the current combination
-    for (let i = nextStartIndex; i < inputArray.length; i++) {
-      const newCombination = [...currentCombination, inputArray[i]];
-      queue.push([newCombination, i + 1]);
-    }
-  }
-
-  return allCombinations;
+type Cache = {
+  [key: string]: number;
 };
 
-const isValidSymbols = (symbols: string, numbersStr: string): boolean => {
-  const damaged = symbols
-    .split('.')
-    .filter(Boolean)
-    .map((s) => s.length)
-    .join(',');
-  return damaged === numbersStr;
+const cache: Cache = {};
+
+const count = (cfg: string, nums: number[]): number => {
+  if (cfg === '') {
+    return nums.length === 0 ? 1 : 0;
+  }
+
+  if (nums.length === 0) {
+    return cfg.includes('#') ? 0 : 1;
+  }
+
+  const key = `${cfg}-${nums.join(',')}`;
+
+  if (cache[key] !== undefined) {
+    return cache[key];
+  }
+
+  let result = 0;
+
+  if (cfg[0] === '.' || cfg[0] === '?') {
+    result += count(cfg.substring(1), nums);
+  }
+
+  if (cfg[0] === '#' || cfg[0] === '?') {
+    if (
+      nums[0] <= cfg.length &&
+      !cfg.substring(0, nums[0]).includes('.') &&
+      (nums[0] === cfg.length || cfg[nums[0]] !== '#')
+    ) {
+      result += count(cfg.substring(nums[0] + 1), nums.slice(1));
+    }
+  }
+
+  cache[key] = result;
+  return result;
 };
 
-let totalArrangements = 0;
-
+let total = 0;
 for (const line of lines) {
-  const [s, n] = line.split(' ');
-  const symbols = [s, s, s, s, s].join('?');
-  const numbersStr = [n, n, n, n, n].join(',');
+  const [cfg, numsStr] = line.split(' ');
+  const nums: number[] = numsStr.split(',').map(Number);
 
-  const unknownIndexes: number[] = [];
-  let symbolsDamagedSum = 0;
-
-  for (let i = 0; i < symbols.length; i++) {
-    if (symbols[i] === '?') unknownIndexes.push(i);
-    if (symbols[i] === '#') symbolsDamagedSum++;
+  let cfgExtended = Array(5).fill(cfg).join('?');
+  let numsExtended: number[] = [];
+  for (let i = 0; i < 5; i++) {
+    numsExtended = numsExtended.concat(nums);
   }
 
-  const numbers = numbersStr.split(',').map(Number);
-  const numbersSum = numbers.reduce((a, b) => a + b, 0);
-
-  const desiredUnknownsDamaged = numbersSum - symbolsDamagedSum;
-
-  // get all possible combinations C(n, k) where n = unknownIndexes.length and k = desiredUnknownsDamaged
-  console.log(`Unknown indexes: ${unknownIndexes}`);
-  console.log(`Desired unknowns damaged: ${desiredUnknownsDamaged}`);
-  const combinations = generateCombinations(unknownIndexes, desiredUnknownsDamaged);
-
-  for (let i = 0; i < combinations.length; i++) {
-    const combination = combinations[i];
-
-    console.log(`Combination: ${combination} - ${combinations.length}`);
-    let newSymbols = '';
-
-    for (let i = 0; i < symbols.length; i++) {
-      if (symbols[i] !== '?') newSymbols += symbols[i];
-      else if (combination.includes(i)) newSymbols += '#';
-      else newSymbols += '.';
-    }
-
-    console.log(`New symbols: ${newSymbols}`);
-    if (isValidSymbols(newSymbols, numbersStr)) totalArrangements++;
-  }
+  total += count(cfgExtended, numsExtended);
 }
 
-console.log(totalArrangements);
+console.log(total);
