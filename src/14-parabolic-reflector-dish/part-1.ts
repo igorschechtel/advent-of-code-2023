@@ -7,6 +7,7 @@ const lines = content.split('\n');
 
 const matrix = lines.map((line) => line.split(''));
 
+console.time('shiftRocksUp');
 // shift rocks up
 for (let i = 0; i < matrix.length; i++) {
   for (let j = 0; j < matrix[i].length; j++) {
@@ -20,6 +21,7 @@ for (let i = 0; i < matrix.length; i++) {
     }
   }
 }
+console.timeEnd('shiftRocksUp');
 
 // get loads sum
 let loadsSum = 0;
