@@ -12,7 +12,7 @@ for (const string of strings) {
   for (let i = 0; i < string.length; i++) {
     currentValue += string.charCodeAt(i);
     currentValue *= 17;
-    currentValue = currentValue % 256;
+    currentValue %= 256;
   }
   sum += currentValue;
 }
